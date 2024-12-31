@@ -1,0 +1,10 @@
+nose2
+PyYAML
+hera
+cwl-utils
+click
+cwl-utils==0.14
+attrs
+loguru
+requests
+cookiecutter
