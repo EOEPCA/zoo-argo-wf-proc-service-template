@@ -38,7 +38,23 @@ class ArgoWFRunnerExecutionHandler(ExecutionHandler):
         pass
 
     def get_additional_parameters(self):
-        return {}
+        # sets the additional parameters for the execution
+        # of the wrapped Application Package
+
+        zoo.info("get_additional_parameters")
+
+        additional_parameters = {
+            "s3_bucket": "results",
+            "sub_path": self.conf["lenv"]["usid"],
+            "region_name": "it-rom",
+            "aws_secret_access_key": "minio-admin",
+            "aws_access_key_id": "minio-admin",
+            "endpoint_url": "http://minio.ns1.svc.cluster.local:9000",
+        }
+
+        zoo.info(f"additional_parameters: {additional_parameters.keys()}")
+
+        return additional_parameters
 
     def handle_outputs(self, log, output, usage_report, tool_logs, **kwargs):
         logger.info("Handling outputs")
@@ -96,6 +112,9 @@ def {{cookiecutter.workflow_id |replace("-", "_")  }}(conf, inputs, outputs):
     ) as stream:
         cwl = yaml.safe_load(stream)
 
+    proxy_url = os.environ.pop("HTTP_PROXY", None)
+    conf["senv_auth"]=conf["auth_env"]
+    conf["auth_env"]["user"]="ns1"
     runner = ZooArgoWorkflowsRunner(
         cwl=cwl,
         conf=conf,
@@ -104,6 +123,7 @@ def {{cookiecutter.workflow_id |replace("-", "_")  }}(conf, inputs, outputs):
         execution_handler=ArgoWFRunnerExecutionHandler(conf=conf),
     )
     exit_status = runner.execute()
+    conf["auth_env"]["user"]=conf["senv_auth"]["user"]
 
     if exit_status == zoo.SERVICE_SUCCEEDED:
         outputs = runner.outputs
