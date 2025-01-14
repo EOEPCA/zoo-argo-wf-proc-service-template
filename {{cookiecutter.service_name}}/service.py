@@ -72,7 +72,7 @@ class ArgoWFRunnerExecutionHandler(ExecutionHandler):
         services_logs = [
             {
                 "url": os.path.join(
-                    self.conf["main"]["tmpUrl"],
+                    self.conf["main"]["tmpUrl"].replace("/temp/",f"/{self.conf['auth_env']['ouser']}/temp/"),
                     f"{self.conf['lenv']['Identifier']}-{self.conf['lenv']['usid']}",
                     os.path.basename(tool_log),
                 ),
@@ -113,7 +113,7 @@ def {{cookiecutter.workflow_id |replace("-", "_")  }}(conf, inputs, outputs):
         cwl = yaml.safe_load(stream)
 
     proxy_url = os.environ.pop("HTTP_PROXY", None)
-    conf["senv_auth"]=conf["auth_env"]
+    conf["auth_env"]["ouser"]=conf["auth_env"]["user"]
     conf["auth_env"]["user"]="ns1"
     runner = ZooArgoWorkflowsRunner(
         cwl=cwl,
@@ -123,7 +123,6 @@ def {{cookiecutter.workflow_id |replace("-", "_")  }}(conf, inputs, outputs):
         execution_handler=ArgoWFRunnerExecutionHandler(conf=conf),
     )
     exit_status = runner.execute()
-    conf["auth_env"]["user"]=conf["senv_auth"]["user"]
 
     if exit_status == zoo.SERVICE_SUCCEEDED:
         outputs = runner.outputs
