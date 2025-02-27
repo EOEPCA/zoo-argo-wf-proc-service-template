@@ -38,7 +38,7 @@ class ArgoWFRunnerExecutionHandler(ExecutionHandler):
         pass
 
     def get_additional_parameters(self):
-        return {}
+        return self.conf.get("additional_parameters", {})
 
     def handle_outputs(self, log, output, usage_report, tool_logs, **kwargs):
         logger.info("Handling outputs")
